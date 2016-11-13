@@ -1,7 +1,7 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8"/>
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
     <title>Space Invader Game</title>
     <style>
 	* { padding: 0; margin: 0; }
@@ -11,7 +11,7 @@
 
 <body>
 
-<canvas id = "myCanvas" width="448" height="512"></canvas>
+<canvas id="myCanvas" width="448" height="512"></canvas>
 
 <script>
 //Canvas variables
@@ -590,14 +590,6 @@ function draw() {
 	//Game has been started
 	else
 	{
-		drawBuildings();
-		drawEnemy();
-		drawBullets();
-		drawtank();
-		drawLives();
-		collisionDetection();
-		emptyColumns();
-		drawScore();
 		//Checks if user has paused game
 		if (paused)
 		{
@@ -605,6 +597,15 @@ function draw() {
 		}
 		else
 		{
+			drawBuildings();
+			drawEnemy();
+			drawBullets();
+			drawtank();
+			drawLives();
+			collisionDetection();
+			emptyColumns();
+			drawScore();
+		
 			//Updates enemy block movement variables if edge of screen has been reached
 			if (enemyOffsetLeft + ((rightCol + 1) * enemyWidth) + (rightCol * enemyPadding) >= canvas.width || enemyOffsetLeft + (leftCol * (enemyPadding + enemyWidth)) <= 0) {
 				enemyMove = -enemyMove;
@@ -676,5 +677,6 @@ function draw() {
 setInterval(draw,10);
 </script>
 
-</body>
-</html>
+
+
+</body></html>
