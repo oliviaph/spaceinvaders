@@ -1,18 +1,27 @@
-<!DOCTYPE html>
-<html><head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <meta charset="utf-8">
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
     <title>Space Invader Game</title>
     <style>
 	* { padding: 0; margin: 0; }
 	canvas { background: #000000; display: block; margin: 0 auto; }
     </style>
-    <script type="text/javascript" src="https://www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.js"></script>
+	<script>
+	/*window.mediaElement = document.getElementById('media');
+	window.mediaManager = new cast.receiver.MediaManager(window.mediaElement);
+	window.castReceiverManager = cast.receiver.CastReceiverManager.getInstance();
+	window.castReceiverManager.start();
+	var customMessageBus = castReceiverManager.getCastMessageBus('urn:x-cast:super.awesome.example');
+	customMessageBus.onMessage = function(event) {
+   	    // Handle message
+	}*/
+    </script>
 </head>
 
 <body>
 
-<canvas id="myCanvas" width="448" height="512"></canvas>
+<canvas id = "myCanvas" width="448" height="512"></canvas>
 
 <script>
 //Canvas variables
@@ -21,6 +30,7 @@ var ctx = canvas.getContext("2d");
 
 // Sound effect stuff
 var playershoot = new Audio('shoot.wav');
+var enemykilled = new Audio('invaderkilled.wav');
 
 // Start screen vars
 var gamestarted = false;
@@ -332,7 +342,12 @@ function collisionDetection() {
 					alert("YOU LOSE!");
 				}
 				alertSent = true;
-	            document.location.reload();
+				reseteverything();
+				gamestarted = false;
+				rightPressed = false;
+				leftPressed = false;
+				shootpressed = false;
+	           // document.location.reload();
 	            break;
 	        }
 			//Checks to see if player bullet has collided with enemy
@@ -341,6 +356,7 @@ function collisionDetection() {
 				//Resets player bullet and makes enemy no longer active 
 				pBulletY = pbottomy;
 				b.status = 0;
+				enemykilled.play();
 				collision = true;
 				pBulletExists = false;
 				enemyRemaining--;
@@ -481,6 +497,12 @@ function drawBuildings() {
 	        }
         }
 	}
+}
+
+function reseteverything() {
+	score = 0;
+	var tankX = 0;
+	rebuildObjects();
 }
 
 //Rebuilds the structures and enemy block for each new wave or for the start of the game
@@ -635,7 +657,12 @@ function draw() {
 									alert("YOU LOSE!");
 								}
 								alertSent = true;
-								document.location.reload();
+								reseteverything();
+								gamestarted = false;
+								rightPressed = false;
+								leftPressed = false;
+								shootpressed = false;
+								//document.location.reload();
 								break;
 							}
 						}
@@ -678,6 +705,5 @@ function draw() {
 setInterval(draw,10);
 </script>
 
-
-
-</body></html>
+</body>
+</html>
