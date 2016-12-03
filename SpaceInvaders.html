@@ -7,7 +7,8 @@
 	* { padding: 0; margin: 0; }
 	canvas { background: #000000; display: block; margin: 0 auto; }
     </style>
-	<script>
+	
+    <script>
 	/*window.mediaElement = document.getElementById('media');
 	window.mediaManager = new cast.receiver.MediaManager(window.mediaElement);
 	window.castReceiverManager = cast.receiver.CastReceiverManager.getInstance();
@@ -17,20 +18,85 @@
    	    // Handle message
 	}*/
     </script>
+    <!-- <script type="text/javascript" src="//www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.js"></script> -->
+	
 </head>
 
 <body>
 
 <canvas id = "myCanvas" width="448" height="512"></canvas>
 
+<script type="text/javascript">
+/*
+    window.onload = function() {
+	cast.receiver.logger.setLevelValue(0);
+        window.castReceiverManager = cast.receiver.CastReceiverManager.getInstance();
+        console.log('Starting Receiver Manager');
+
+        // handler for the 'ready' event
+        castReceiverManager.onReady = function(event) {
+          console.log('Received Ready event: ' + JSON.stringify(event.data));
+          window.castReceiverManager.setApplicationState("Application status is ready...");
+        };
+
+        // handler for 'senderconnected' event
+        castReceiverManager.onSenderConnected = function(event) {
+          console.log('Received Sender Connected event: ' + event.data);
+          console.log(window.castReceiverManager.getSender(event.data).userAgent);
+        };
+
+        // handler for 'senderdisconnected' event
+        castReceiverManager.onSenderDisconnected = function(event) {
+          console.log('Received Sender Disconnected event: ' + event.data);
+          if (window.castReceiverManager.getSenders().length == 0) {
+	        window.close();
+	      }
+        };
+
+        // handler for 'systemvolumechanged' event
+        castReceiverManager.onSystemVolumeChanged = function(event) {
+          console.log('Received System Volume Changed event: ' + event.data['level'] + ' ' +
+              event.data['muted']);
+        };
+
+        // create a CastMessageBus to handle messages for a custom namespace
+        window.messageBus =
+          window.castReceiverManager.getCastMessageBus(
+              'urn:x-cast:com.google.cast.sample.helloworld');
+
+        // handler for the CastMessageBus message event
+        window.messageBus.onMessage = function(event) {
+          console.log('Message [' + event.senderId + ']: ' + event.data);
+          // display the message from the sender
+          displayText(event.data);
+          // inform all senders on the CastMessageBus of the incoming message event
+          // sender message listener will be invoked
+          window.messageBus.send(event.senderId, event.data);
+        }
+    };
+        // initialize the CastReceiverManager with an application status message
+        window.castReceiverManager.start({statusText: "Application is starting"});
+        console.log('Receiver Manager started');
+
+        // utility function to display the text message in the input field
+        function displayText(text) {
+        console.log(text);
+        document.getElementById("message").innerHTML=text;
+        window.castReceiverManager.setApplicationState(text);
+      };
+</script>
+*/
 <script>
+
 //Canvas variables
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
 
 // Sound effect stuff
 var playershoot = new Audio('shoot.wav');
+var player2shoot = new Audio('shoot.wav');
 var enemykilled = new Audio('invaderkilled.wav');
+var enemykilled2 = new Audio('invaderkilled.wav');
 
 // Start screen vars
 var gamestarted = false;
@@ -40,6 +106,18 @@ var title1x = 100;
 var title1y = title0y + 60;
 var startx = 90;
 var starty = title1y + 50;
+
+// Select Screen vars
+var oneplayerx =  150;
+var oneplayery = 250;
+var twoplayerx = 150;
+var twoplayery = 285;
+var selecting = false;
+var cursermoved = false;
+
+// False if one player, true if two
+var twoplayermode = false;
+
 //Prevents functions from spamming user with alerts when functions are stuck in loops
 var alertSent = false;
 
@@ -57,11 +135,18 @@ var barrelWidth = 4;
 var barrelHeight = 4;
 var tankX = 0;
 var tankY = 50;
+var tank2X = 30;
 var rightPressed = false;
 var leftPressed = false;
 var shootpressed = false;
 var collision = true;
+var p2collision = true;
 var pBulletExists = false;
+var p2rightPressed = false;
+var p2leftPressed = false;
+var p2shootpressed = false;
+var p2BulletExists = false;
+
 
 //Enemy variables
 var enemyRowCount = 5;
@@ -86,9 +171,13 @@ var inversemoverate = 200;
 //Bullet Variables
 var bulletWidth = 3;
 var pBulletHeight = enemyHeight * 3/5;
+var p2BulletHeight = pBulletHeight;
 var pBulletX = canvas.width/2;
 var pBulletY = canvas.height - tankY - tankHeight - 10;
+var p2BulletX = canvas.width/2;
+var p2BulletY = canvas.height - tankY - tankHeight - 10;
 var pbottomy = pBulletY;
+var p2bottomy = pBulletY;
 var dy = -5;
 var eBulletHeight = enemyHeight;
 var enemyBullets = [];
@@ -128,11 +217,14 @@ for (i = 0; i < buildingcount; i++) {
 
 //Score
 var score = 0;
+var p2score = 0;
 
 //Lives
 var lives = 3;
+var p2lives = 3;
 var livesOffsetLeft = 10;
 var livesOffsetBottom = 15;
+var p2livesOffsetLeft = 340;
 
 var enemies = [];
 //Initializes the enemy block
@@ -150,16 +242,58 @@ document.addEventListener("keyup", keyUpHandler, false);
 //e is an event
 function keyDownHandler(e) {
 	if (!gamestarted && e.keyCode == 13){
-		gamestarted = true;
-    } else if(e.keyCode == 39) {
-		rightPressed = true;
-    } else if(e.keyCode == 37) {
-		leftPressed = true;
-    } else if ((!paused) && e.keyCode == 38) {
-		shootpressed = true;
-	} else if (e.keyCode == 13) {
-		paused = !paused;
+		if (!selecting)
+		{
+			selecting = true;
+		}
+		else
+		{
+			gamestarted = true;
+			if (cursermoved) // If player moved curser to two player option
+			{
+				twoplayermode = true;
+			}
+			else
+			{
+				p2lives = 0;
+			}
+		}
+    } else if (lives != 0) // Player 1 can't perform actions if dead
+	{
+	
+		if (e.keyCode == 39) {
+			rightPressed = true;
+		} else if(e.keyCode == 37) {
+			leftPressed = true;
+		} else if ((!paused) && e.keyCode == 38) {
+			shootpressed = true;
+		} else if (e.keyCode == 13) {
+			paused = !paused;
+		}
 	}
+	if (gamestarted && (p2lives != 0)) // Likewise for player 2
+	{
+		if (e.keyCode == 65)
+		{
+			p2leftPressed = true;
+		}
+		else if (e.keyCode == 87)
+		{
+			p2shootpressed = true;
+		}
+		else if (e.keyCode == 68)
+		{
+			p2rightPressed = true;
+		}
+	}
+	
+	// Move cursor for player select screen
+	if (!gamestarted && selecting && ((e.keyCode == 38) || (e.keyCode == 40) || (e.keyCode == 83) || (e.keyCode == 87)))
+	{
+		cursermoved = !cursermoved;
+	}
+	
+	
 }
 function keyUpHandler(e) {
     if(e.keyCode == 39) {
@@ -168,6 +302,19 @@ function keyUpHandler(e) {
         leftPressed = false;
     } else if (e.keyCode == 38) {
 		shootpressed = false;
+	}
+	
+	if (e.keyCode == 65)
+	{
+		p2leftPressed = false;
+	}
+	else if (e.keyCode == 87)
+	{
+		p2shootpressed = false;
+	}
+	else if (e.keyCode == 68)
+	{
+		p2rightPressed = false;
 	}
 }
 
@@ -199,6 +346,24 @@ function drawBullets() {
 		ctx.fill();
 		ctx.closePath();
 	}
+	
+	if (p2BulletExists || p2shootpressed)
+	{
+		//If bullet is newly fired then make sound effect
+		if (!p2BulletExists && p2shootpressed)
+		{
+				player2shoot.play();
+		}
+		p2collision = false;
+		//Set bullet existance to true
+		p2BulletExists = true;
+		//Draws bullet
+		ctx.beginPath();
+		ctx.rect(p2BulletX, p2BulletY, bulletWidth, p2BulletHeight);
+		ctx.fillStyle = "#00FF00";
+		ctx.fill();
+		ctx.closePath();
+	}	
 	
 	//Random number to see if enemy fires bullet
 	var randNum = getRandomIntInclusive(1,75);
@@ -232,13 +397,26 @@ function drawBullets() {
 
 //Draws user tank
 function drawtank() {
-    ctx.beginPath();
-    ctx.rect(tankX, canvas.height - tankHeight - tankY, tankWidth, tankHeight);
-	ctx.rect(tankX + (tankWidth - uppertankwidth)/2, canvas.height - tankHeight - tankY - uppertankheight, uppertankwidth, uppertankheight);
-	ctx.rect(tankX + tankWidth/2 -  barrelWidth/2, canvas.height - tankY - tankHeight - barrelHeight - uppertankheight, barrelWidth, barrelHeight);
-    ctx.fillStyle = "#00FF00";
-    ctx.fill();
-    ctx.closePath();
+	if (lives != 0)
+	{
+		ctx.beginPath();
+		ctx.rect(tankX, canvas.height - tankHeight - tankY, tankWidth, tankHeight);
+		ctx.rect(tankX + (tankWidth - uppertankwidth)/2, canvas.height - tankHeight - tankY - uppertankheight, uppertankwidth, uppertankheight);
+		ctx.rect(tankX + tankWidth/2 -  barrelWidth/2, canvas.height - tankY - tankHeight - barrelHeight - uppertankheight, barrelWidth, barrelHeight);
+		ctx.fillStyle = "#00FF00";
+		ctx.fill();
+		ctx.closePath();
+	}
+	if (p2lives != 0)
+	{
+		ctx.beginPath();
+		ctx.rect(tank2X, canvas.height - tankHeight - tankY, tankWidth, tankHeight);
+		ctx.rect(tank2X + (tankWidth - uppertankwidth)/2, canvas.height - tankHeight - tankY - uppertankheight, uppertankwidth, uppertankheight);
+		ctx.rect(tank2X + tankWidth/2 -  barrelWidth/2, canvas.height - tankY - tankHeight - barrelHeight - uppertankheight, barrelWidth, barrelHeight);
+		ctx.fillStyle = "#32BC32";
+		ctx.fill();
+		ctx.closePath();
+	}
 }
 
 //Draws enemy block
@@ -344,6 +522,7 @@ function collisionDetection() {
 				alertSent = true;
 				reseteverything();
 				gamestarted = false;
+				selecting = false;
 				rightPressed = false;
 				leftPressed = false;
 				shootpressed = false;
@@ -368,7 +547,25 @@ function collisionDetection() {
 				} else {
 					score += 30;
 				}
-
+			}
+			if ((p2BulletY - p2BulletHeight) < b.y && (p2BulletY - p2BulletHeight) > (b.y - enemyHeight) && 
+			    ((p2BulletX > b.x && p2BulletX < (b.x + enemyWidth)) || ((p2BulletX + bulletWidth) > b.x && (p2BulletX + bulletWidth) < (b.x + enemyWidth)))) {
+				//Resets player bullet and makes enemy no longer active 
+				p2BulletY = p2bottomy;
+				b.status = 0;
+				enemykilled2.play();
+				p2collision = true;
+				p2BulletExists = false;
+				enemyRemaining--;
+				//Adds score depending on row of destroyed enemy
+				if (r == 4 || r == 3) {
+					p2score += 10;
+				} else if (r == 2 || r == 1) {
+					p2score += 20;
+				} else {
+					p2score += 30;
+				}
+			}
 				//At set intervals of destroyed enemies increases speed of enemy block to mimic the increased speed of original space invaders
 				switch (enemyRemaining) {
                     //Increases speed of enemies every 5 enemies destroyed
@@ -407,7 +604,6 @@ function collisionDetection() {
 				        break;
 				    default: break;    
 				}
-	        }
 	    }
 	}
     }
@@ -420,6 +616,16 @@ function collisionDetection() {
 				//Checks only if building piece still exists
 	            if (buildings[k][i][j].status >= 1) {
 					//Checks to see if each existing building piece has been collided with a players bullet or ...
+					if ((p2BulletX >= p.x && p2BulletX <= p.x + blocksidelength) && (p2BulletY <= p.y)) {
+						//Resets bullet position 
+			            p2BulletY = p2bottomy;
+						//Decreases size of structure piece
+			            p.status -= 1;
+						//Sets collision to be true
+			            p2collision = true;
+						//Wipes player bullet from game to allow player to shoot again
+			            p2BulletExists = false;
+			        }
 			        if ((pBulletX >= p.x && pBulletX <= p.x + blocksidelength) && (pBulletY <= p.y)) {
 						//Resets bullet position 
 			            pBulletY = pbottomy;
@@ -501,7 +707,11 @@ function drawBuildings() {
 
 function reseteverything() {
 	score = 0;
-	var tankX = 0;
+	p2score = 0;
+	lives = 3;
+	p2lives = 3;
+	tankX = 0;
+	tank2X = 30;
 	rebuildObjects();
 }
 
@@ -555,6 +765,15 @@ function drawScore() {
     ctx.fillStyle = "white";
     ctx.fillText("SCORE < 1 > ", livesOffsetLeft, 20);
     ctx.fillText(score, livesOffsetLeft * 5, 40);
+	
+	if (twoplayermode)
+	{
+		//Prints score for player 2
+		ctx.font = "16px Arial";
+		ctx.fillStyle = "white";
+		ctx.fillText("SCORE < 2 > ", p2livesOffsetLeft, 20);
+		ctx.fillText(p2score, p2livesOffsetLeft + 40, 40);
+	}
 }
 
 function drawLives() {
@@ -579,6 +798,24 @@ function drawLives() {
         ctx.fill();
         ctx.closePath();
     }
+	
+	if (twoplayermode)
+	{
+		ctx.font = "30px Arial";
+		ctx.fillStyle = "white";
+		ctx.fillText(p2lives, p2livesOffsetLeft, canvas.height - livesOffsetBottom);
+
+		//Displays tanks for each life that user has remaining like in the original space invader game
+		for (var i = 1; i < p2lives; i++) {
+			ctx.beginPath();
+			ctx.rect(p2livesOffsetLeft + 40 + 25 * (i-1), canvas.height - livesOffsetBottom - tankHeight, tankWidth, tankHeight);
+			ctx.rect(p2livesOffsetLeft + 40 + 25 * (i-1) + (tankWidth - uppertankwidth) / 2, canvas.height - livesOffsetBottom - tankHeight - uppertankheight, uppertankwidth, uppertankheight);
+			ctx.rect(p2livesOffsetLeft + 40 + 25 * (i-1) + tankWidth / 2 - barrelWidth / 2, canvas.height - livesOffsetBottom - tankHeight - barrelHeight - uppertankheight, barrelWidth, barrelHeight);
+			ctx.fillStyle = "#32BC32";
+			ctx.fill();
+			ctx.closePath();
+		}
+	}
 }
 
 //Draw pause screen when user presses enter
@@ -601,6 +838,33 @@ function drawStartScreen()
     ctx.fillText("Press Enter to Start", startx, starty);
 }
 
+function drawSelectScreen()
+{
+	ctx.font = "32px Arial";
+    ctx.fillStyle = "#00FF00";
+    ctx.fillText("1 Player", oneplayerx, oneplayery);
+	ctx.fillText("2 Players", twoplayerx, twoplayery);
+	
+	if (!cursermoved)
+	{
+		ctx.beginPath(); 
+		ctx.moveTo(oneplayerx - 10, oneplayery - 10); 
+		ctx.lineTo(oneplayerx - 30, oneplayery - 20); 
+		ctx.lineTo(oneplayerx - 30, oneplayery); 
+		ctx.fill();
+		ctx.closePath();
+	}
+	else
+	{
+		ctx.beginPath(); 
+		ctx.moveTo(twoplayerx - 10, twoplayery - 10); 
+		ctx.lineTo(twoplayerx - 30, twoplayery - 20); 
+		ctx.lineTo(twoplayerx - 30, twoplayery); 
+		ctx.fill();
+		ctx.closePath();
+	}
+}
+
 //Draws everything as needed and acts as main function
 function draw() {
 	//Clear the canvas for new updated drawings
@@ -608,7 +872,14 @@ function draw() {
 	//Start menu screen if user hasnt started game yet
 	if (!gamestarted)
 	{
-		drawStartScreen();
+		if (selecting)
+		{
+			drawSelectScreen();
+		}
+		else
+		{
+			drawStartScreen();
+		}
 	}
 	//Game has been started
 	else
@@ -641,6 +912,10 @@ function draw() {
 				pBulletY = pbottomy;
 				pBulletExists = false;
 			}
+			if (p2BulletY + dy < p2BulletHeight) {
+				p2BulletY = p2bottomy;
+				p2BulletExists = false;
+			}
 			
 			//Updates movement of enemy bullets if they exist
 			if (enemyBullets.length > 0) {
@@ -648,11 +923,11 @@ function draw() {
 					//Checks if enemy bullet is about to leave the screen
 					if (enemyBullets[i].y - dy >= canvas.height - tankY) {
 						//Checks to see if as enemy bullet reaches bottom it intersects player tank
-						if (enemyBullets[i].x >= tankX && enemyBullets[i].x < tankX + tankWidth) {
+						if ((lives != 0) && enemyBullets[i].x >= tankX && enemyBullets[i].x < tankX + tankWidth) {
 							//Updates player lives if so
 							lives--;
 							//If player has no lives then end game
-							if (lives == 0) {
+							if ((p2lives == 0) && (lives == 0)) {
 								if (!alertSent) {
 									alert("YOU LOSE!");
 								}
@@ -660,8 +935,34 @@ function draw() {
 								reseteverything();
 								gamestarted = false;
 								rightPressed = false;
+								selecting = false;
 								leftPressed = false;
 								shootpressed = false;
+								p2rightPressed = false;
+								p2leftPressed = false;
+								p2shootpressed = false;
+								//document.location.reload();
+								break;
+							}
+						}
+						if ((p2lives != 0) && enemyBullets[i].x >= tank2X && enemyBullets[i].x < tank2X + tankWidth) {
+							//Updates player lives if so
+							p2lives--;
+							//If player has no lives then end game
+							if ((p2lives == 0) && (lives == 0)) {
+								if (!alertSent) {
+									alert("YOU LOSE!");
+								}
+								alertSent = true;
+								reseteverything();
+								gamestarted = false;
+								selecting = false;
+								rightPressed = false;
+								leftPressed = false;
+								shootpressed = false;
+								p2rightPressed = false;
+								p2leftPressed = false;
+								p2shootpressed = false;
 								//document.location.reload();
 								break;
 							}
@@ -681,13 +982,28 @@ function draw() {
 			} else if (leftPressed && tankX > 0) {
 				tankX -= 2;
 			}
-
+			
+			if (p2rightPressed && tank2X < canvas.width - tankWidth) {
+				tank2X += 2;
+			}
+			else if (p2leftPressed && tank2X > 0) {
+				tank2X -= 2;
+			}
+			
 			//Adjusts player bullet movement
 			if (!pBulletExists) {
 				pBulletX = tankX + tankWidth / 2;
 			} else {
 				pBulletY += dy;
 			}
+			
+			if (!p2BulletExists) {
+				p2BulletX = tank2X + tankWidth / 2;
+			}
+			else {
+				p2BulletY += dy;
+			}
+			
 			//Update movement counter for enemy block
 			movementcounter += 2;
 			
