@@ -1,4 +1,10 @@
 ﻿<!DOCTYPE html>
+<!-- IMPORTANT NOTE FOR MAINTENANCE ASSIGNMENT:
+	  CODE THAT IS ADDED WILL HAVE A
+	  COMMENT AT THE END OF ITS LINE WHICH BEGINS
+	  WITH "ADD:". THIS IS THE MARK WHICH 
+	  INFORMS THE READER WHICH LINES OF CODE ARE
+	  NEW. -->
 <html>
 <head>
     <meta charset="utf-8"/>
@@ -27,66 +33,6 @@
 <canvas id = "myCanvas" width="448" height="512"></canvas>
 
 <script type="text/javascript">
-/*
-    window.onload = function() {
-	cast.receiver.logger.setLevelValue(0);
-        window.castReceiverManager = cast.receiver.CastReceiverManager.getInstance();
-        console.log('Starting Receiver Manager');
-
-        // handler for the 'ready' event
-        castReceiverManager.onReady = function(event) {
-          console.log('Received Ready event: ' + JSON.stringify(event.data));
-          window.castReceiverManager.setApplicationState("Application status is ready...");
-        };
-
-        // handler for 'senderconnected' event
-        castReceiverManager.onSenderConnected = function(event) {
-          console.log('Received Sender Connected event: ' + event.data);
-          console.log(window.castReceiverManager.getSender(event.data).userAgent);
-        };
-
-        // handler for 'senderdisconnected' event
-        castReceiverManager.onSenderDisconnected = function(event) {
-          console.log('Received Sender Disconnected event: ' + event.data);
-          if (window.castReceiverManager.getSenders().length == 0) {
-	        window.close();
-	      }
-        };
-
-        // handler for 'systemvolumechanged' event
-        castReceiverManager.onSystemVolumeChanged = function(event) {
-          console.log('Received System Volume Changed event: ' + event.data['level'] + ' ' +
-              event.data['muted']);
-        };
-
-        // create a CastMessageBus to handle messages for a custom namespace
-        window.messageBus =
-          window.castReceiverManager.getCastMessageBus(
-              'urn:x-cast:com.google.cast.sample.helloworld');
-
-        // handler for the CastMessageBus message event
-        window.messageBus.onMessage = function(event) {
-          console.log('Message [' + event.senderId + ']: ' + event.data);
-          // display the message from the sender
-          displayText(event.data);
-          // inform all senders on the CastMessageBus of the incoming message event
-          // sender message listener will be invoked
-          window.messageBus.send(event.senderId, event.data);
-        }
-    };
-        // initialize the CastReceiverManager with an application status message
-        window.castReceiverManager.start({statusText: "Application is starting"});
-        console.log('Receiver Manager started');
-
-        // utility function to display the text message in the input field
-        function displayText(text) {
-        console.log(text);
-        document.getElementById("message").innerHTML=text;
-        window.castReceiverManager.setApplicationState(text);
-      };
-</script>
-*/
-<script>
 
 //Canvas variables
 var canvas = document.getElementById("myCanvas");
@@ -94,9 +40,9 @@ var ctx = canvas.getContext("2d");
 
 // Sound effect stuff
 var playershoot = new Audio('shoot.wav');
-var player2shoot = new Audio('shoot.wav');
+var player2shoot = new Audio('shoot.wav'); // ADD: A second, identical sound effect for when player 2 shoots
 var enemykilled = new Audio('invaderkilled.wav');
-var enemykilled2 = new Audio('invaderkilled.wav');
+var enemykilled2 = new Audio('invaderkilled.wav'); // ADD: A second, identical sound effect for when player 2 kills an enemy
 
 // Start screen vars
 var gamestarted = false;
@@ -110,13 +56,13 @@ var starty = title1y + 50;
 // Select Screen vars
 var oneplayerx =  150;
 var oneplayery = 250;
-var twoplayerx = 150;
-var twoplayery = 285;
-var selecting = false;
-var cursermoved = false;
+var twoplayerx = 150; // ADD: X coordinate for player 2
+var twoplayery = 285; // ADD: Y coordinate for player 2
+var selecting = false; // ADD: A variable that controls  whether the select screen is visible
+var cursermoved = false; // ADD: A variable that controls where the cursor is on the select screen
 
 // False if one player, true if two
-var twoplayermode = false;
+var twoplayermode = false; // ADD: Controls whether two player mode is active
 
 //Prevents functions from spamming user with alerts when functions are stuck in loops
 var alertSent = false;
@@ -140,12 +86,12 @@ var rightPressed = false;
 var leftPressed = false;
 var shootpressed = false;
 var collision = true;
-var p2collision = true;
-var pBulletExists = false;
-var p2rightPressed = false;
-var p2leftPressed = false;
-var p2shootpressed = false;
-var p2BulletExists = false;
+var p2collision = true; // ADD: Collision detection for player 2
+var pBulletExists = false; 
+var p2rightPressed = false; // ADD: This and the following 2 lines indicate what controls are active for player 2
+var p2leftPressed = false; // ADD: 
+var p2shootpressed = false; // ADD: 
+var p2BulletExists = false; // ADD: Says whether player 2's bullet is active
 
 
 //Enemy variables
@@ -171,13 +117,13 @@ var inversemoverate = 200;
 //Bullet Variables
 var bulletWidth = 3;
 var pBulletHeight = enemyHeight * 3/5;
-var p2BulletHeight = pBulletHeight;
+var p2BulletHeight = pBulletHeight; // ADD: Controls height of player 2 bullet
 var pBulletX = canvas.width/2;
 var pBulletY = canvas.height - tankY - tankHeight - 10;
-var p2BulletX = canvas.width/2;
-var p2BulletY = canvas.height - tankY - tankHeight - 10;
+var p2BulletX = canvas.width/2;  // ADD: Controls x coordinate of player 2 bullet
+var p2BulletY = canvas.height - tankY - tankHeight - 10;  // ADD: Controls y coordinate of player 2 bullet
 var pbottomy = pBulletY;
-var p2bottomy = pBulletY;
+var p2bottomy = pBulletY;  // ADD: Controls the maximum height a player 2 bullet can reach
 var dy = -5;
 var eBulletHeight = enemyHeight;
 var enemyBullets = [];
@@ -217,14 +163,14 @@ for (i = 0; i < buildingcount; i++) {
 
 //Score
 var score = 0;
-var p2score = 0;
+var p2score = 0;  // ADD: Score for player 2
 
 //Lives
 var lives = 3;
-var p2lives = 3;
+var p2lives = 3;  // ADD: Lives for player 2
 var livesOffsetLeft = 10;
 var livesOffsetBottom = 15;
-var p2livesOffsetLeft = 340;
+var p2livesOffsetLeft = 340;  // ADD: How far to the right player 2's lives should be displayed
 
 var enemies = [];
 //Initializes the enemy block
@@ -271,7 +217,7 @@ function keyDownHandler(e) {
 			paused = !paused;
 		}
 	}
-	if (gamestarted && (p2lives != 0)) // Likewise for player 2
+	if (gamestarted && (p2lives != 0))  // ADD: Controls for player 2
 	{
 		if (e.keyCode == 65)
 		{
@@ -287,7 +233,7 @@ function keyDownHandler(e) {
 		}
 	}
 	
-	// Move cursor for player select screen
+	// ADD: Movement for cursor on player select screen
 	if (!gamestarted && selecting && ((e.keyCode == 38) || (e.keyCode == 40) || (e.keyCode == 83) || (e.keyCode == 87)))
 	{
 		cursermoved = !cursermoved;
@@ -304,6 +250,7 @@ function keyUpHandler(e) {
 		shootpressed = false;
 	}
 	
+	 // ADD: Controls for player 2
 	if (e.keyCode == 65)
 	{
 		p2leftPressed = false;
@@ -347,7 +294,7 @@ function drawBullets() {
 		ctx.closePath();
 	}
 	
-	if (p2BulletExists || p2shootpressed)
+	if (p2BulletExists || p2shootpressed)  // ADD: Bullet handling for player 2
 	{
 		//If bullet is newly fired then make sound effect
 		if (!p2BulletExists && p2shootpressed)
@@ -407,7 +354,7 @@ function drawtank() {
 		ctx.fill();
 		ctx.closePath();
 	}
-	if (p2lives != 0)
+	if (p2lives != 0)  // ADD: Second tank drawn for player 2
 	{
 		ctx.beginPath();
 		ctx.rect(tank2X, canvas.height - tankHeight - tankY, tankWidth, tankHeight);
@@ -548,6 +495,7 @@ function collisionDetection() {
 					score += 30;
 				}
 			}
+			 // ADD: Bullet collision detection for player 2
 			if ((p2BulletY - p2BulletHeight) < b.y && (p2BulletY - p2BulletHeight) > (b.y - enemyHeight) && 
 			    ((p2BulletX > b.x && p2BulletX < (b.x + enemyWidth)) || ((p2BulletX + bulletWidth) > b.x && (p2BulletX + bulletWidth) < (b.x + enemyWidth)))) {
 				//Resets player bullet and makes enemy no longer active 
@@ -616,6 +564,7 @@ function collisionDetection() {
 				//Checks only if building piece still exists
 	            if (buildings[k][i][j].status >= 1) {
 					//Checks to see if each existing building piece has been collided with a players bullet or ...
+					 // ADD: Bullet collision detection with buildings for player 2
 					if ((p2BulletX >= p.x && p2BulletX <= p.x + blocksidelength) && (p2BulletY <= p.y)) {
 						//Resets bullet position 
 			            p2BulletY = p2bottomy;
@@ -707,11 +656,11 @@ function drawBuildings() {
 
 function reseteverything() {
 	score = 0;
-	p2score = 0;
+	p2score = 0;  // ADD: Reset player 2 score
 	lives = 3;
-	p2lives = 3;
+	p2lives = 3;  // ADD: Reset player 2 lives
 	tankX = 0;
-	tank2X = 30;
+	tank2X = 30;  // ADD: Reset player 2 tank position
 	rebuildObjects();
 }
 
@@ -766,7 +715,7 @@ function drawScore() {
     ctx.fillText("SCORE < 1 > ", livesOffsetLeft, 20);
     ctx.fillText(score, livesOffsetLeft * 5, 40);
 	
-	if (twoplayermode)
+	if (twoplayermode)  // ADD: Score printing for player 2
 	{
 		//Prints score for player 2
 		ctx.font = "16px Arial";
@@ -799,7 +748,7 @@ function drawLives() {
         ctx.closePath();
     }
 	
-	if (twoplayermode)
+	if (twoplayermode)  // ADD: Lives display for player 2
 	{
 		ctx.font = "30px Arial";
 		ctx.fillStyle = "white";
@@ -838,14 +787,14 @@ function drawStartScreen()
     ctx.fillText("Press Enter to Start", startx, starty);
 }
 
-function drawSelectScreen()
+function drawSelectScreen()  // ADD: A Select screen, which allows the user to choose between one-player mode and two-player mode
 {
 	ctx.font = "32px Arial";
     ctx.fillStyle = "#00FF00";
     ctx.fillText("1 Player", oneplayerx, oneplayery);
 	ctx.fillText("2 Players", twoplayerx, twoplayery);
 	
-	if (!cursermoved)
+	if (!cursermoved) // Control whether the cursor is pointed at the first or second option
 	{
 		ctx.beginPath(); 
 		ctx.moveTo(oneplayerx - 10, oneplayery - 10); 
@@ -912,7 +861,7 @@ function draw() {
 				pBulletY = pbottomy;
 				pBulletExists = false;
 			}
-			if (p2BulletY + dy < p2BulletHeight) {
+			if (p2BulletY + dy < p2BulletHeight) {  // ADD: Bullet handling for player 2
 				p2BulletY = p2bottomy;
 				p2BulletExists = false;
 			}
@@ -927,7 +876,7 @@ function draw() {
 							//Updates player lives if so
 							lives--;
 							//If player has no lives then end game
-							if ((p2lives == 0) && (lives == 0)) {
+							if ((p2lives == 0) && (lives == 0)) {  // ADD: Life detection for player 2
 								if (!alertSent) {
 									alert("YOU LOSE!");
 								}
@@ -938,18 +887,18 @@ function draw() {
 								selecting = false;
 								leftPressed = false;
 								shootpressed = false;
-								p2rightPressed = false;
+								p2rightPressed = false;  // ADD: Reset of variables for player 2
 								p2leftPressed = false;
 								p2shootpressed = false;
 								//document.location.reload();
 								break;
 							}
 						}
-						if ((p2lives != 0) && enemyBullets[i].x >= tank2X && enemyBullets[i].x < tank2X + tankWidth) {
+						if ((p2lives != 0) && enemyBullets[i].x >= tank2X && enemyBullets[i].x < tank2X + tankWidth) {  // ADD: Block that checks for when player 2 is hit by an enemy
 							//Updates player lives if so
 							p2lives--;
 							//If player has no lives then end game
-							if ((p2lives == 0) && (lives == 0)) {
+							if ((p2lives == 0) && (lives == 0)) {  
 								if (!alertSent) {
 									alert("YOU LOSE!");
 								}
@@ -983,7 +932,7 @@ function draw() {
 				tankX -= 2;
 			}
 			
-			if (p2rightPressed && tank2X < canvas.width - tankWidth) {
+			if (p2rightPressed && tank2X < canvas.width - tankWidth) {  // ADD: Movement for player 2
 				tank2X += 2;
 			}
 			else if (p2leftPressed && tank2X > 0) {
@@ -997,7 +946,7 @@ function draw() {
 				pBulletY += dy;
 			}
 			
-			if (!p2BulletExists) {
+			if (!p2BulletExists) {  // ADD: Bullet movement for player 2
 				p2BulletX = tank2X + tankWidth / 2;
 			}
 			else {
